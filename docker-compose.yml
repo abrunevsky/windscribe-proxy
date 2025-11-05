@@ -1,0 +1,24 @@
+services:
+  windscribe-vpn:
+    image: wiorca/docker-windscribe
+    container_name: windscribe-vpn
+    cap_add: [ NET_ADMIN ]
+    environment:
+      - WINDSCRIBE_USERNAME
+      - WINDSCRIBE_PASSWORD
+      - WINDSCRIBE_PROTOCOL
+      - FIREWALL_INPUT_PORTS=1080
+    ports:
+      - "127.0.0.1:${PROXY_PORT}:1080"
+    restart: unless-stopped
+
+  socks5:
+    image: serjs/go-socks5-proxy
+    container_name: socks5-via-vpn
+    network_mode: "service:windscribe-vpn"
+    environment:
+      - PROXY_USER
+      - PROXY_PASSWORD
+    depends_on:
+      - windscribe-vpn
+    restart: unless-stopped
